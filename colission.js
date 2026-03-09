@@ -1,13 +1,12 @@
 const canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 
-// Dimensiones de la ventana
 const window_height = window.innerHeight;
 const window_width = window.innerWidth;
 
 canvas.height = window_height;
 canvas.width = window_width;
-canvas.style.background = "#ffffff";
+canvas.style.background = "#ff8";
 
 class Circle {
 
@@ -25,8 +24,10 @@ class Circle {
 
         this.speed = speed;
 
-        this.dx = 1 * this.speed;
-        this.dy = 1 * this.speed;
+        this.dx = (Math.random() > 0.5 ? 1 : -1) * this.speed;
+        this.dy = (Math.random() > 0.5 ? 1 : -1) * this.speed;
+
+        this.isColliding = false;
     }
 
     draw(context) {
@@ -53,28 +54,70 @@ class Circle {
 
         this.draw(context);
 
-        // Movimiento en X
         this.posX += this.dx;
 
         if (this.posX + this.radius > window_width || this.posX - this.radius < 0) {
             this.dx = -this.dx;
         }
 
-        // Movimiento en Y
         this.posY += this.dy;
 
         if (this.posY + this.radius > window_height || this.posY - this.radius < 0) {
             this.dy = -this.dy;
         }
     }
+
+    checkCollision(otherCircle) {
+
+        let dx = otherCircle.posX - this.posX;
+        let dy = otherCircle.posY - this.posY;
+
+        let distance = Math.sqrt(dx * dx + dy * dy);
+
+        let minDistance = this.radius + otherCircle.radius;
+
+        if (distance < minDistance) {
+
+            if (!this.isColliding && !otherCircle.isColliding) {
+
+                // Flash azul
+                this.color = "#0000FF";
+                otherCircle.color = "#0000FF";
+
+                // Rebote simple
+                this.dx = -this.dx;
+                this.dy = -this.dy;
+
+                otherCircle.dx = -otherCircle.dx;
+                otherCircle.dy = -otherCircle.dy;
+
+                // Separar círculos para evitar que queden pegados
+                let overlap = minDistance - distance;
+
+                let nx = dx / distance;
+                let ny = dy / distance;
+
+                this.posX -= nx * overlap / 2;
+                this.posY -= ny * overlap / 2;
+
+                otherCircle.posX += nx * overlap / 2;
+                otherCircle.posY += ny * overlap / 2;
+
+                this.isColliding = true;
+                otherCircle.isColliding = true;
+            }
+
+        } else {
+
+            this.isColliding = false;
+            otherCircle.isColliding = false;
+
+        }
+    }
 }
 
-
-// Array que almacena los círculos
 let circles = [];
 
-
-// Generar círculos aleatorios
 function generateCircles(n) {
 
     for (let i = 0; i < n; i++) {
@@ -86,8 +129,8 @@ function generateCircles(n) {
 
         let color = "#000000";
 
-        // velocidad entre 1 y 5
-        let speed = Math.random() * 4 + 1;
+        // velocidad reducida 50%
+        let speed = Math.random() * 2 + 0.5;
 
         let text = `C${i + 1}`;
 
@@ -95,28 +138,13 @@ function generateCircles(n) {
     }
 }
 
-
-// Detección de colisiones
 function detectCollisions() {
 
     for (let i = 0; i < circles.length; i++) {
 
         for (let j = i + 1; j < circles.length; j++) {
 
-            let c1 = circles[i];
-            let c2 = circles[j];
-
-            let dx = c1.posX - c2.posX;
-            let dy = c1.posY - c2.posY;
-
-            let distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance < c1.radius + c2.radius) {
-
-                c1.color = "#0000FF";
-                c2.color = "#0000FF";
-
-            }
+            circles[i].checkCollision(circles[j]);
 
         }
 
@@ -124,13 +152,10 @@ function detectCollisions() {
 
 }
 
-
-// Animación
 function animate() {
 
     ctx.clearRect(0, 0, window_width, window_height);
 
-    // Resetear colores antes de verificar colisiones
     circles.forEach(circle => {
         circle.color = circle.originalColor;
     });
@@ -144,9 +169,6 @@ function animate() {
     requestAnimationFrame(animate);
 }
 
-
-// Generar 20 círculos
 generateCircles(20);
 
-// Iniciar animación
 animate();
