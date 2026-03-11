@@ -28,6 +28,8 @@ class Circle {
         this.dy = (Math.random() > 0.5 ? 1 : -1) * this.speed;
 
         this.isColliding = false;
+
+        this.flashFrames = 0;
     }
 
     draw(context) {
@@ -51,6 +53,13 @@ class Circle {
     }
 
     update(context) {
+
+        if (this.flashFrames > 0) {
+            this.color = "#0000FF";
+            this.flashFrames--;
+        } else {
+            this.color = this.originalColor;
+        }
 
         this.draw(context);
 
@@ -80,18 +89,15 @@ class Circle {
 
             if (!this.isColliding && !otherCircle.isColliding) {
 
-                // Flash azul
-                this.color = "#0000FF";
-                otherCircle.color = "#0000FF";
+                this.flashFrames = 10;
+                otherCircle.flashFrames = 10;
 
-                // Rebote simple
                 this.dx = -this.dx;
                 this.dy = -this.dy;
 
                 otherCircle.dx = -otherCircle.dx;
                 otherCircle.dy = -otherCircle.dy;
 
-                // Separar círculos para evitar que queden pegados
                 let overlap = minDistance - distance;
 
                 let nx = dx / distance;
@@ -129,7 +135,6 @@ function generateCircles(n) {
 
         let color = "#000000";
 
-        // velocidad reducida 50%
         let speed = Math.random() * 2 + 0.5;
 
         let text = `C${i + 1}`;
@@ -155,10 +160,6 @@ function detectCollisions() {
 function animate() {
 
     ctx.clearRect(0, 0, window_width, window_height);
-
-    circles.forEach(circle => {
-        circle.color = circle.originalColor;
-    });
 
     detectCollisions();
 
