@@ -162,9 +162,29 @@ obj.speed = obj.baseSpeed * multiplier;
 
 function drawScore(){
 
-ctx.fillStyle = "white";
-ctx.font = "22px Arial";
-ctx.fillText("Objetos eliminados: "+contador,window_width-260,40);
+let text = "Objetos eliminados: " + contador;
+
+ctx.font = "bold 40px Arial";
+ctx.textAlign = "right";
+ctx.textBaseline = "top";
+
+// sombra
+ctx.shadowColor = "rgba(0,0,0,0.8)";
+ctx.shadowBlur = 10;
+ctx.shadowOffsetX = 3;
+ctx.shadowOffsetY = 3;
+
+// relleno
+ctx.fillStyle = "#ffffff";
+ctx.fillText(text, window_width - 30, 30);
+
+// borde
+ctx.lineWidth = 3;
+ctx.strokeStyle = "#000000";
+ctx.strokeText(text, window_width - 30, 30);
+
+// reset sombra para no afectar otros dibujos
+ctx.shadowBlur = 0;
 
 }
 
